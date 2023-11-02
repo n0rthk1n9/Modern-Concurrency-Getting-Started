@@ -34,11 +34,22 @@ import SwiftUI
 //: ## Part 1: Tasks
 // Tasks run asynchronously on background queue
 // TODO: Wrap these 3 lines in a Task { }
-print("Doing some work on a task")
-let sum = (1...100000).reduce(0, +)
-print("1 + 2 + 3 ... 100000 = \(sum)")
+Task {
+    print("Doing some work on a task")
+    let sum = (1...100000).reduce(0, +)
+    print("Unnamed Task done: 1 + 2 + 3 ... 100000 = \(sum)")
+}
 
 print("Doing some work on the main actor")
+print("Doing more work on the main actor")
+
+let task = Task {
+    print("Doing some work on a task")
+    let sum = (1...100000).reduce(0, +)
+    print("Named Task done: 1 + 2 + 3 ... 100000 = \(sum)")
+}
+
+print("Doing yet more work on the main actor")
 //: ### Check if running on main actor
 let specificKey = DispatchSpecificKey<String>()
 DispatchQueue.main.setSpecific(key: specificKey, value: "main")
