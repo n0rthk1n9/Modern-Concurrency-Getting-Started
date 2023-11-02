@@ -75,6 +75,9 @@ class LittleJohnModel: ObservableObject {
         print("Updated: \(Date())")
       }
     }
+    Task { @MainActor in
+      tickerSymbols = []
+    }
   }
 
   /// A URL session that lets requests run indefinitely so we can receive live updates from server.

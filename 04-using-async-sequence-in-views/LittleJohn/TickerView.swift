@@ -83,5 +83,10 @@ struct TickerView: View {
         }
       }
     }
+    .onChange(of: model.tickerSymbols.count) { newValue in
+      if newValue == 0 {
+        presentationMode.wrappedValue.dismiss()
+      }
+    }
   }
 }
