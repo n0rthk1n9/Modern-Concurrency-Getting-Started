@@ -41,6 +41,7 @@ struct TickerView: View {
   @State var lastErrorMessage = "" {
     didSet { isDisplayingError = true }
   }
+
   @State var isDisplayingError = false
 
   var body: some View {
@@ -63,7 +64,7 @@ struct TickerView: View {
       })
     }
     .alert("Error", isPresented: $isDisplayingError, actions: {
-      Button("Close", role: .cancel) { }
+      Button("Close", role: .cancel) {}
     }, message: {
       Text(lastErrorMessage)
     })
@@ -71,5 +72,16 @@ struct TickerView: View {
     .font(.custom("FantasqueSansMono-Regular", size: 18))
     .padding(.horizontal)
     // TODO: Call model.startTicker(selectedSymbols)
+    .task {
+      do {
+        try await model.startTicker(selectedSymbols)
+      } catch {
+        if (error as? URLError)?.code == .cancelled {
+          return
+        } else {
+          lastErrorMessage = error.localizedDescription
+        }
+      }
+    }
   }
 }
