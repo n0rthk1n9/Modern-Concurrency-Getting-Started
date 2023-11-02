@@ -35,21 +35,30 @@ import SwiftUI
 
 //: ### Part 3: Cancel a task
 Task {
-  print("\nDoing some work on an unnamed task")
-  let sum = (1...100000).reduce(0, +)
-  print("Unnamed task done: 1 + 2 + 3 ... 100000 = \(sum)")
+    print("\nDoing some work on an unnamed task")
+    let sum = (1...1000000).reduce(0, +)
+    print("Unnamed task done: 1 + 2 + 3 ... 100000 = \(sum)")
 }
+
 print("Doing some work on the main queue")
 print("Doing more work on the main queue")
 
 // This task runs after previous task finishes
 let task = Task {
-  print("\nDoing some work on a named task")
-  // TODO: Check for cancellation before doing work
-
-  let sum = (1...100000).reduce(0, +)
-  print("Named task done: 1 + 2 + 3 ... 100000 = \(sum)")
+    print("\nDoing some work on a named task")
+    // TODO: Check for cancellation before doing work
+//    try Task.checkCancellation()
+    if Task.isCancelled {
+        print("Task cancelled")
+        throw CancellationError()
+    }
+    let sum = (1...10000000).reduce(0, +)
+    print("Named task done: 1 + 2 + 3 ... 100000 = \(sum)")
 }
+
 print("Doing yet more work on the main queue")
 
 // TODO: Cancel task
+
+task.cancel()
+print("Canceled task.")

@@ -34,15 +34,65 @@ import SwiftUI
 //: [Previous](@previous)
 
 //: ### Part 2: Asynchronous sequences
-func findTitle(url: URL) async throws -> String? {
-  for try await line in url.lines {
-    if line.contains("<title>") {
-      return line.trimmingCharacters(in: .whitespaces)
+struct Typewriter: AsyncSequence {
+    typealias AsyncIterator = TypewriterIterator
+    typealias Element = String
+
+    let phrase: String
+
+    func makeAsyncIterator() -> TypewriterIterator {
+        return TypewriterIterator(phrase)
     }
-  }
-  return nil
+}
+
+struct TypewriterIterator: AsyncIteratorProtocol {
+    typealias Element = String
+
+    let phrase: String
+    var index: String.Index
+
+    init(_ phrase: String) {
+        self.phrase = phrase
+        self.index = phrase.startIndex
+    }
+
+    mutating func next() async throws -> String? {
+        guard index < phrase.endIndex else { return nil }
+        try await Task.sleep(until: .now + .seconds(1), clock: .continuous)
+        defer {
+            index = phrase.index(after: index)
+        }
+        return String(phrase[phrase.startIndex ... index])
+    }
+}
+
+Task {
+    for try await item in Typewriter(phrase: "Hello, world!") {
+        print(item)
+    }
+    print("Done")
+}
+
+func findTitle(url: URL) async throws -> String? {
+    for try await line in url.lines {
+        if line.contains("<title>") {
+            return line.trimmingCharacters(in: .whitespaces)
+        }
+    }
+    return nil
 }
 
 // TODO: Create a Task to call findTitle(url:)
+
+Task {
+    let url = URL(string: "https://kodeco.com")!
+    if let title = try await findTitle(url: url) {
+        print(title)
+    }
+    var iterator = url.lines.makeAsyncIterator()
+    if let next = try await iterator.next() {
+        print("\n\(next)")
+    }
+}
 
 //: [Next](@next)
