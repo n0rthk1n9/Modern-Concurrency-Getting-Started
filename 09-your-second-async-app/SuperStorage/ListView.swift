@@ -45,6 +45,7 @@ struct ListView: View {
       isDisplayingDownload = true
     }
   }
+
   @State var isDisplayingDownload = false
 
   /// The latest error message.
@@ -53,6 +54,7 @@ struct ListView: View {
       isDisplayingError = true
     }
   }
+
   @State var isDisplayingError = false
 
   var body: some View {
@@ -60,7 +62,8 @@ struct ListView: View {
       VStack {
         // Programatically push the file download view.
         NavigationLink(destination: DownloadView(file: selected).environmentObject(model),
-                       isActive: $isDisplayingDownload) {
+                       isActive: $isDisplayingDownload)
+        {
           EmptyView()
         }.hidden()
         // The list of files avalable for download.
@@ -89,11 +92,19 @@ struct ListView: View {
         .animation(.easeOut(duration: 0.33), value: files)
       }
       .alert("Error", isPresented: $isDisplayingError, actions: {
-        Button("Close", role: .cancel) { }
+        Button("Close", role: .cancel) {}
       }, message: {
         Text(lastErrorMessage)
       })
       // TODO: Call model.availableFiles()
+      .task {
+        guard files.isEmpty else { return }
+        do {
+          files = try await model.availableFiles()
+        } catch {
+          lastErrorMessage = error.localizedDescription
+        }
+      }
     }
   }
 }

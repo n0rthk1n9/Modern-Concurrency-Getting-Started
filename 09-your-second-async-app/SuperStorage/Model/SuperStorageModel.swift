@@ -42,7 +42,14 @@ class SuperStorageModel: ObservableObject {
     guard let url = URL(string: "http://localhost:8080/files/list") else {
       throw "Could not create the URL."
     }
-    return []
+    let (data, response) = try await URLSession.shared.data(from: url)
+    guard (response as? HTTPURLResponse)?.statusCode == 200 else {
+      throw "The server responded with an error."
+    }
+    guard let list = try? JSONDecoder().decode([DownloadFile].self, from: data) else {
+      throw "The server response was not recognized."
+    }
+    return list
   }
 
   /// Fetches server's status, user's usage quota
@@ -103,7 +110,7 @@ class SuperStorageModel: ObservableObject {
       return (offset: partOffset, size: partSize, name: partName)
     }
     let total = 4
-    let parts = (0..<total).map { partInfo(index: $0, of: total) }
+    let parts = (0 ..< total).map { partInfo(index: $0, of: total) }
 
     // Add code here, replacing placeholder return statement
     return Data()
@@ -124,7 +131,7 @@ extension SuperStorageModel {
     let downloadInfo = DownloadInfo(id: UUID(), name: name, progress: 0.0)
     downloads.append(downloadInfo)
   }
-  
+
   /// Updates a the progress of a given download.
   func updateDownload(name: String, progress: Double) {
     if let index = downloads.firstIndex(where: { $0.name == name }) {
