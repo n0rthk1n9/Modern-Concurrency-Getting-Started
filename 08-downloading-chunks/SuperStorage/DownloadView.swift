@@ -56,12 +56,19 @@ struct DownloadView: View {
           Task {
             do {
               fileData = try await model.download(file: file)
-            } catch { }
-            isDownloadActive = false 
+            } catch {}
+            isDownloadActive = false
           }
         },
         downloadWithUpdatesAction: {
           // Download a file with UI progress updates.
+          isDownloadActive = true
+          Task {
+            do {
+              fileData = try await model.downloadWithProgress(file: file)
+            } catch {}
+            isDownloadActive = false
+          }
         },
         downloadMultipleAction: {
           // Download a file in multiple concurrent parts.
@@ -83,8 +90,7 @@ struct DownloadView: View {
     .animation(.easeOut(duration: 0.33), value: model.downloads)
     .listStyle(InsetGroupedListStyle())
     .toolbar(content: {
-      Button(action: {
-      }, label: { Text("Cancel Now") })
+      Button(action: {}, label: { Text("Cancel Now") })
         .disabled(model.downloads.isEmpty)
     })
     .onDisappear {
